@@ -1,459 +1,141 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AXEL — Course, muscu, infra & Flayn</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --ink:#e8eef2;
-    --ink-dim:#8a97a3;
-    --abyss:#04070b;
-    --ice:#9fd8ff;
-    --line:rgba(159,216,255,.14);
-    --font-display:"Helvetica Neue", Helvetica, Arial, sans-serif;      /* titres : anguleux */
-    --font-body:"Nunito", ui-rounded, "SF Pro Rounded", system-ui, sans-serif; /* textes : arrondi */
-    --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    --radius:24px;
-  }
-  *{margin:0;padding:0;box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  body{
-    background:var(--abyss);color:var(--ink);
-    font-family:var(--font-body);
-    overflow-x:hidden;-webkit-font-smoothing:antialiased;
-  }
-  ::selection{background:var(--ice);color:var(--abyss)}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Axel — Athlète, builder, sysadmin</title>
 
-  /* ---------- LOADER ---------- */
-  #loader{
-    position:fixed;inset:0;z-index:100;background:var(--abyss);
-    display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;
-    transition:opacity .8s, visibility .8s;
-  }
-  #loader.done{opacity:0;visibility:hidden}
-  #loader .pct{font-family:var(--font-mono);font-size:11px;letter-spacing:.35em;color:var(--ink-dim)}
-  #loader .bar{width:160px;height:2px;border-radius:2px;background:var(--line);overflow:hidden}
-  #loader .bar i{display:block;height:100%;background:var(--ice);transform-origin:left;transform:scaleX(0);transition:transform .2s linear}
+  <!-- SEO -->
+  <meta name="description" content="Axel — Athlète, builder, sysadmin. Course à pied, muscu et infrastructure. J'itère sur mes chronos, mes charges, mes projets. Co-créateur de Flayn.">
+  <meta name="author" content="Axel">
+  <meta name="theme-color" content="#04070b">
+  <link rel="canonical" href="https://axel.plot-lab.xyz/">
 
-  /* ---------- CANVAS + GRAIN ---------- */
-  #scene{position:fixed;inset:0;z-index:0;display:block}
-  #grain{
-    position:fixed;inset:0;z-index:50;pointer-events:none;opacity:.05;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
-  }
+  <!-- Open Graph / partage social -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://axel.plot-lab.xyz/">
+  <meta property="og:title" content="Axel — Relentless">
+  <meta property="og:description" content="Course à pied, muscu et infrastructure. J'itère sur mes chronos, mes charges, mes projets.">
+  <meta property="og:locale" content="fr_FR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Axel — Relentless">
+  <meta name="twitter:description" content="Course à pied, muscu et infrastructure. J'itère sur mes chronos, mes charges, mes projets.">
 
-  /* ---------- NAV ---------- */
-  nav{
-    position:fixed;top:0;left:0;right:0;z-index:40;
-    display:flex;justify-content:space-between;align-items:center;
-    padding:28px 40px;mix-blend-mode:difference;
-  }
-  nav .logo{font-family:var(--font-mono);font-size:13px;letter-spacing:.5em;font-weight:700;color:var(--ink);text-decoration:none}
-  nav ul{display:flex;gap:34px;list-style:none}
-  nav a{font-family:var(--font-mono);font-size:10px;letter-spacing:.28em;color:var(--ink);text-decoration:none;opacity:.6;transition:opacity .3s}
-  nav a:hover,nav a:focus-visible{opacity:1}
-  nav a:focus-visible{outline:1px solid var(--ice);outline-offset:4px}
+  <!-- Favicons -->
+  <link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png">
+  <link rel="icon" href="/assets/img/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/favicon-180.png">
 
-  /* readouts techniques */
-  .readout{position:fixed;z-index:40;font-family:var(--font-mono);font-size:9px;letter-spacing:.25em;color:var(--ink-dim);pointer-events:none}
-  #ro-left{left:40px;bottom:36px}
-  #ro-right{right:40px;bottom:36px;text-align:right}
-  .readout span{color:var(--ice)}
+  <!-- Fonts : Space Grotesk (display) + Fraunces (body, variable) + JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,400;0,9..144,500;1,9..144,400&family=JetBrains+Mono:wght@400;500&display=swap">
 
-  /* ---------- CONTENU ---------- */
-  main{position:relative;z-index:10}
-  section{
-    min-height:100vh;display:flex;flex-direction:column;justify-content:center;
-    padding:0 40px;max-width:1280px;margin:0 auto;
-  }
-  .eyebrow{font-family:var(--font-mono);font-size:10px;letter-spacing:.4em;color:var(--ice);margin-bottom:28px}
-
-  /* HERO */
-  #hero{align-items:center;text-align:center}
-  #hero h1{
-    font-family:var(--font-display);
-    font-size:clamp(52px,11vw,168px);font-weight:700;line-height:.92;
-    letter-spacing:-.02em;text-transform:uppercase;
-  }
-  #hero h1 .hollow{color:transparent;-webkit-text-stroke:1px var(--ink)}
-  #hero p{margin-top:34px;max-width:440px;font-size:15px;line-height:1.7;color:var(--ink-dim)}
-  #hero .scroll-hint{
-    position:absolute;bottom:110px;left:50%;transform:translateX(-50%);
-    font-family:var(--font-mono);font-size:9px;letter-spacing:.4em;color:var(--ink-dim);
-    animation:pulse 2.4s ease-in-out infinite;
-  }
-  @keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
-
-  /* MANIFESTO */
-  #manifesto h2{
-    font-family:var(--font-display);
-    font-size:clamp(28px,4.4vw,58px);font-weight:600;line-height:1.18;
-    letter-spacing:-.01em;max-width:900px;
-  }
-  #manifesto h2 em{font-style:normal;color:var(--ice)}
-
-  /* SERVICES — bento */
-  #services .grid{
-    display:grid;gap:16px;
-    grid-template-columns:repeat(3,1fr);
-    grid-template-areas:"a a b" "c c c";
-  }
-  .card{
-    display:block;color:inherit;text-decoration:none;
-    background:rgba(159,216,255,.04);
-    border:1px solid var(--line);
-    border-radius:var(--radius);
-    padding:40px 36px 52px;
-    backdrop-filter:blur(6px);
-    transition:background .4s, transform .4s, border-color .4s;
-  }
-  .card:hover{background:rgba(159,216,255,.08);border-color:rgba(159,216,255,.3);transform:translateY(-4px)}
-  .card:nth-child(1){grid-area:a}
-  .card:nth-child(2){grid-area:b}
-  .card:nth-child(3){grid-area:c}
-  .card .tag{font-family:var(--font-mono);font-size:9px;letter-spacing:.3em;color:var(--ink-dim)}
-  .card h3{
-    font-family:var(--font-display);
-    margin-top:56px;font-size:21px;font-weight:600;letter-spacing:-.01em;text-transform:uppercase;
-  }
-  .card p{margin-top:16px;font-size:14px;line-height:1.7;color:var(--ink-dim);max-width:520px}
-
-  /* CONTACT */
-  #contact{align-items:center;text-align:center}
-  #contact h2{
-    font-family:var(--font-display);
-    font-size:clamp(40px,8vw,120px);font-weight:700;letter-spacing:-.02em;
-    text-transform:uppercase;line-height:.95;
-  }
-  #contact a.cta{
-    margin-top:44px;display:inline-block;
-    font-family:var(--font-mono);font-size:11px;letter-spacing:.35em;
-    color:var(--abyss);background:var(--ice);
-    padding:18px 42px;border-radius:999px;text-decoration:none;
-    transition:transform .3s, box-shadow .3s;
-  }
-  #contact a.cta:hover,#contact a.cta:focus-visible{transform:translateY(-3px);box-shadow:0 0 40px rgba(159,216,255,.35)}
-  #contact a.cta:focus-visible{outline:1px solid var(--ice);outline-offset:4px}
-
-  footer{
-    position:relative;z-index:10;display:flex;justify-content:space-between;
-    padding:28px 40px;border-top:1px solid var(--line);
-    font-family:var(--font-mono);font-size:9px;letter-spacing:.25em;color:var(--ink-dim);
-  }
-
-  /* reveals */
-  .reveal{opacity:0;transform:translateY(36px);transition:opacity 1s, transform 1s}
-  .reveal.in{opacity:1;transform:none}
-
-  @media (prefers-reduced-motion:reduce){
-    .reveal{transition:none;opacity:1;transform:none}
-    #hero .scroll-hint{animation:none}
-  }
-  @media (max-width:840px){
-    nav ul{display:none}
-    section{padding:0 24px}
-    #services .grid{grid-template-columns:1fr;grid-template-areas:"a" "b" "c"}
-    .readout{display:none}
-    footer{flex-direction:column;gap:8px}
-  }
-</style>
+  <!-- Styles -->
+  <link rel="stylesheet" href="/assets/css/styles.css">
 </head>
 <body>
 
-<div id="loader" aria-hidden="true">
-  <div class="pct">ÉCHAUFFEMENT — <span id="pctval">0</span>%</div>
-  <div class="bar"><i id="barfill"></i></div>
-</div>
+  <!-- Loader -->
+  <div id="loader" aria-hidden="true">
+    <div class="pct">échauffement — <span id="pctval">0</span>%</div>
+    <div class="bar"><i id="barfill"></i></div>
+  </div>
 
-<canvas id="scene"></canvas>
-<div id="grain"></div>
+  <!-- Scène 3D + grain -->
+  <canvas id="scene"></canvas>
+  <div id="grain"></div>
 
-<nav>
-  <a class="logo" href="#hero">AXEL</a>
-  <ul>
-    <li><a href="#manifesto">MINDSET</a></li>
-    <li><a href="#services">UNIVERS</a></li>
-    <li><a href="#contact">CONTACT</a></li>
-  </ul>
-</nav>
+  <!-- Navigation -->
+  <nav>
+    <a class="logo" href="#hero">Axel</a>
+    <ul>
+      <li><a href="#manifesto">Mindset</a></li>
+      <li><a href="#services">Univers</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
 
-<div class="readout" id="ro-left">ALLURE CIBLE&nbsp;<span>4'30"/KM</span><br>DISTANCE&nbsp;<span id="ro-depth">00.0KM</span></div>
-<div class="readout" id="ro-right">UPTIME HOMELAB&nbsp;<span>99.9%</span><br>STATUT&nbsp;<span id="ro-temp">EN MOUVEMENT</span></div>
+  <!-- Readouts ambiants -->
+  <div class="readout" id="ro-left">Allure cible&nbsp;<span>4'30"/km</span><br>Distance&nbsp;<span id="ro-depth">00.0km</span></div>
+  <div class="readout" id="ro-right">Uptime homelab&nbsp;<span>99.9%</span><br>Statut&nbsp;<span>en mouvement</span></div>
 
-<main>
-  <section id="hero">
-    <p class="eyebrow reveal">ATHLÈTE — BUILDER — SYSADMIN</p>
-    <h1 class="reveal">AXEL,<br><span class="hollow">RELENTLESS</span></h1>
-    <p class="reveal">Course à pied, muscu et infrastructure. Je passe ma vie à itérer&nbsp;: sur mes chronos, sur mes charges, sur mes projets.</p>
-    <div class="scroll-hint">SCROLL — ÇA COMMENCE</div>
-  </section>
+  <!-- Contenu -->
+  <main>
+    <section id="hero">
+      <p class="eyebrow reveal">Athlète — Builder — Sysadmin</p>
+      <h1 class="hero-title">Axel,<br><span class="accent">relentless</span></h1>
+      <p class="hero-lead reveal">Course à pied, muscu et infrastructure. Je passe ma vie à itérer&nbsp;: sur mes chronos, sur mes charges, sur mes projets.</p>
+      <div class="scroll-hint">Scroll</div>
+    </section>
 
-  <section id="manifesto">
-    <p class="eyebrow reveal">MINDSET</p>
-    <h2 class="reveal">Un 5&nbsp;km, une prog de muscu, un projet ou une app&nbsp;: c'est le même sport. On mesure, on itère, on recommence le lendemain. <em>La motivation lance, la discipline finit.</em></h2>
-  </section>
+    <section id="manifesto">
+      <p class="eyebrow reveal">Mindset</p>
+      <h2 class="manifesto-title">Un 5&nbsp;km, une prog de muscu, un projet ou une app&nbsp;: c'est le même sport. On mesure, on itère, on recommence le lendemain. <em>La motivation lance, la discipline finit.</em></h2>
+    </section>
 
-  <section id="services">
-    <p class="eyebrow reveal">MES TERRAINS DE JEU</p>
-    <div class="grid reveal">
-      <a class="card" href="https://flayn.me" target="_blank" rel="noopener">
-        <div class="tag">PROJET — FLAYN.ME ↗</div>
-        <h3>Flayn</h3>
-        <p>L'app que j'ai co-créée pour tracker ses habitudes et ses projets. Une plateforme de motivation gamifiée&nbsp;: tâches quotidiennes, suivi de progression, level up. Le mindset ci-dessus, transformé en produit.</p>
+    <section id="services">
+      <p class="eyebrow reveal">Mes terrains de jeu</p>
+      <div class="grid">
+        <a class="card card--flayn reveal" href="https://flayn.me" target="_blank" rel="noopener">
+          <div class="card__tag"><span class="dot"></span>Projet · flayn.me</div>
+          <div class="card__arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </div>
+          <div class="card__body">
+            <h3>Flayn</h3>
+            <p>L'app que j'ai co-créée pour tracker ses habitudes et ses projets. Une plateforme de motivation gamifiée&nbsp;: tâches quotidiennes, suivi de progression, level up. Le mindset ci-dessus, <em>transformé en produit</em>.</p>
+          </div>
+        </a>
+        <div class="card card--homelab reveal">
+          <div class="card__tag"><span class="dot"></span>Homelab</div>
+          <div class="card__body">
+            <h3>Homelab</h3>
+            <p>Virtualisation, Supervision, Mailing, Filtrage, Automatisation, IA locale. Mon labo perso où j'expérimente.</p>
+          </div>
+        </div>
+        <div class="card card--saas reveal">
+          <div class="card__tag"><span class="dot"></span>Tech</div>
+          <div class="card__body">
+            <h3>App SaaS</h3>
+            <p>Sysadmin le jour, builder le reste du temps. Apps et SaaS que je conçois et héberge, du back au front. onte l'infra, de l'idée au résultat.</p>
+          </div>
+        </div>
+        <a class="card card--sport reveal" href="https://www.strava.com/athletes/205681211" target="_blank" rel="noopener">
+          <div class="card__tag"><span class="dot"></span>Sport · strava</div>
+            <div class="card__arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </div>
+            <div class="card__body">
+              <h3>Course &amp; muscu</h3>
+              <p>Objectif&nbsp;: passer sous les 4'30"/km sur 5&nbsp;km, à coups de séances de fractionné structurées. Et sous la barre, même logique&nbsp;: progression trackée, semaine après semaine.</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <section id="contact">
+      <p class="eyebrow reveal">Contact</p>
+      <h2 class="contact-title">Suis le<br><em>mouvement</em></h2>
+      <a class="cta" href="https://www.instagram.com/_axel.plt/" target="_blank" rel="noopener">
+        Instagram — @_axel.plt
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg>
       </a>
-      <div class="card">
-        <div class="tag">SPORT</div>
-        <h3>Course &amp; muscu</h3>
-        <p>Objectif&nbsp;: passer sous les 4'30"/km sur 5&nbsp;km, à coups de séances de fractionné structurées. Et sous la barre, même logique&nbsp;: progression trackée, semaine après semaine.</p>
-      </div>
-      <div class="card">
-        <div class="tag">TECH</div>
-        <h3>Infra, app, SaaS</h3>
-        <p>Sysadmin le jour, Builder le reste du temps&nbsp;: Apps, SaaS, automatisation, IA locale. Je monte l'infra, puis je construis dessus.</p>
-      </div>
-    </div>
-  </section>
+    </section>
+  </main>
 
-  <section id="contact">
-    <p class="eyebrow reveal">CONTACT</p>
-    <h2 class="reveal">SUIS LE<br>MOUVEMENT</h2>
-    <a class="cta reveal" href="https://www.instagram.com/_axel.plt/" target="_blank" rel="noopener">INSTAGRAM — @_AXEL.PLT</a>
-  </section>
-</main>
+  <!-- Footer -->
+  <footer>
+    <div>© 2026 Axel — Aucun jour de repos</div>
+    <div>Le Mans, France — 48.0061° N</div>
+  </footer>
 
-<footer>
-  <div>© 2026 AXEL — AUCUN JOUR DE REPOS</div>
-  <div>LE MANS, FRANCE — 48.0061° N</div>
-</footer>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
-(function(){
-  /* ---- Setup ---- */
-  const canvas = document.getElementById('scene');
-  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-  renderer.setSize(innerWidth, innerHeight);
-
-  const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x04070b, 0.06);
-
-  const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
-  camera.position.z = 7;
-
-  /* ---- Cube central : shader fresnel "glace" + arêtes ---- */
-  const iceUniforms = { uTime:{value:0} };
-  const iceMat = new THREE.ShaderMaterial({
-    uniforms: iceUniforms,
-    transparent: true,
-    vertexShader:`
-      varying vec3 vN, vV;
-      void main(){
-        vec4 mv = modelViewMatrix * vec4(position,1.0);
-        vN = normalize(normalMatrix * normal);
-        vV = normalize(-mv.xyz);
-        gl_Position = projectionMatrix * mv;
-      }`,
-    fragmentShader:`
-      uniform float uTime;
-      varying vec3 vN, vV;
-      void main(){
-        float f = pow(1.0 - abs(dot(vN, vV)), 2.2);
-        vec3 col = mix(vec3(0.04,0.12,0.20), vec3(0.62,0.85,1.0), f);
-        col += vec3(0.62,0.85,1.0) * (0.5 + 0.5*sin(uTime*0.8 + vN.y*6.0)) * 0.08;
-        gl_FragColor = vec4(col, 0.28 + f*0.72);
-      }`
-  });
-
-  /* Box arrondie généralisée (w,h,d) : sommets clampés vers une inner box + rayon */
-  function roundedBox(w, h, d, radius, seg){
-    const geo = new THREE.BoxGeometry(w, h, d, seg, seg, seg);
-    const posAttr = geo.attributes.position;
-    const hx = w/2 - radius, hy = h/2 - radius, hz = d/2 - radius;
-    const v = new THREE.Vector3(), c = new THREE.Vector3();
-    for(let i=0;i<posAttr.count;i++){
-      v.fromBufferAttribute(posAttr, i);
-      c.set(
-        THREE.MathUtils.clamp(v.x, -hx, hx),
-        THREE.MathUtils.clamp(v.y, -hy, hy),
-        THREE.MathUtils.clamp(v.z, -hz, hz)
-      );
-      v.sub(c).normalize().multiplyScalar(radius).add(c);
-      posAttr.setXYZ(i, v.x, v.y, v.z);
-    }
-    geo.computeVertexNormals();
-    return geo;
-  }
-
-  // halo fresnel additif réutilisable (coque BackSide)
-  const glowMat = new THREE.ShaderMaterial({
-    transparent:true, side:THREE.BackSide, blending:THREE.AdditiveBlending, depthWrite:false,
-    vertexShader:`
-      varying vec3 vN, vV;
-      void main(){
-        vec4 mv = modelViewMatrix * vec4(position,1.0);
-        vN = normalize(normalMatrix * normal);
-        vV = normalize(-mv.xyz);
-        gl_Position = projectionMatrix * mv;
-      }`,
-    fragmentShader:`
-      varying vec3 vN, vV;
-      void main(){
-        float f = pow(1.0 - abs(dot(vN, vV)), 3.0);
-        gl_FragColor = vec4(vec3(0.62,0.85,1.0), f*0.35);
-      }`
-  });
-
-  /* ---- Laptop "glace" construit en primitives ---- */
-  const laptop = new THREE.Group();
-
-  // Base (châssis)
-  const baseGeo = roundedBox(3.2, 0.16, 2.2, 0.06, 6);
-  const base = new THREE.Mesh(baseGeo, iceMat);
-  laptop.add(base);
-  const baseGlow = new THREE.Mesh(baseGeo, glowMat);
-  baseGlow.scale.setScalar(1.05);
-  laptop.add(baseGlow);
-
-  // Écran : pivot à la charnière (arrière de la base), incliné vers l'arrière
-  const hinge = new THREE.Group();
-  hinge.position.set(0, 0.08, -1.06);
-  hinge.rotation.x = -0.28;
-  laptop.add(hinge);
-
-  const lidGeo = roundedBox(3.2, 2.05, 0.09, 0.045, 6);
-  const lid = new THREE.Mesh(lidGeo, iceMat);
-  lid.position.y = 1.02;
-  hinge.add(lid);
-  const lidGlow = new THREE.Mesh(lidGeo, glowMat);
-  lidGlow.scale.setScalar(1.05);
-  lidGlow.position.y = 1.02;
-  hinge.add(lidGlow);
-
-  // Dalle écran : dégradé froid légèrement lumineux
-  const screen = new THREE.Mesh(
-    new THREE.PlaneGeometry(2.95, 1.82),
-    new THREE.ShaderMaterial({
-      vertexShader:`
-        varying vec2 vUv;
-        void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
-      fragmentShader:`
-        varying vec2 vUv;
-        void main(){
-          vec3 col = mix(vec3(0.02,0.05,0.09), vec3(0.25,0.45,0.62), vUv.y);
-          col += vec3(0.62,0.85,1.0) * smoothstep(0.9, 1.0, vUv.y) * 0.3;
-          gl_FragColor = vec4(col, 1.0);
-        }`
-    })
-  );
-  screen.position.set(0, 1.02, 0.048);
-  hinge.add(screen);
-
-  // Clavier : touches instanciées + trackpad
-  const keys = new THREE.InstancedMesh(
-    new THREE.BoxGeometry(0.16, 0.02, 0.16),
-    new THREE.MeshBasicMaterial({color:0x123047, transparent:true, opacity:0.9}),
-    14*5
-  );
-  const m = new THREE.Matrix4();
-  let k = 0;
-  for(let row=0; row<5; row++){
-    for(let col=0; col<14; col++){
-      m.setPosition(-1.3 + col*0.2, 0.085, -0.85 + row*0.2);
-      keys.setMatrixAt(k++, m);
-    }
-  }
-  laptop.add(keys);
-
-  const trackpad = new THREE.Mesh(
-    new THREE.PlaneGeometry(1.0, 0.62),
-    new THREE.MeshBasicMaterial({color:0x0d2334, transparent:true, opacity:0.9})
-  );
-  trackpad.rotation.x = -Math.PI/2;
-  trackpad.position.set(0, 0.082, 0.62);
-  laptop.add(trackpad);
-
-  laptop.position.y = -0.35;
-  scene.add(laptop);
-
-  /* ---- Neige ---- */
-  const N = 500;
-  const pos = new Float32Array(N*3);
-  for(let i=0;i<N;i++){
-    pos.set([(Math.random()-0.5)*24, (Math.random()-0.5)*16, (Math.random()-0.5)*14], i*3);
-  }
-  const snowGeo = new THREE.BufferGeometry();
-  snowGeo.setAttribute('position', new THREE.BufferAttribute(pos,3));
-  scene.add(new THREE.Points(snowGeo, new THREE.PointsMaterial({
-    color:0xcfe9ff, size:0.03, transparent:true, opacity:0.55, depthWrite:false
-  })));
-
-  /* ---- Interactions ---- */
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let mx=0, my=0, scrollP=0;
-
-  addEventListener('mousemove', e=>{
-    mx = e.clientX/innerWidth - 0.5;
-    my = e.clientY/innerHeight - 0.5;
-  });
-  addEventListener('scroll', ()=>{
-    const max = document.body.scrollHeight - innerHeight;
-    scrollP = max > 0 ? scrollY/max : 0;
-    document.getElementById('ro-depth').textContent = (scrollP*42.2).toFixed(1).padStart(4,'0')+'KM';
-  }, {passive:true});
-  addEventListener('resize', ()=>{
-    camera.aspect = innerWidth/innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth, innerHeight);
-  });
-
-  /* ---- Boucle de rendu ---- */
-  const clock = new THREE.Clock();
-  (function tick(){
-    const t = clock.getElapsedTime();
-    iceUniforms.uTime.value = t;
-
-    if(!reduced){
-      laptop.rotation.y = t*0.15 + scrollP*Math.PI*2;
-      laptop.rotation.x = 0.28 + Math.sin(t*0.2)*0.06 + scrollP*0.4;
-      laptop.position.y = -0.35 + Math.sin(t*0.5)*0.08;
-
-      const p = snowGeo.attributes.position;
-      for(let i=0;i<N;i++){
-        const y = p.getY(i) - 0.008;
-        p.setY(i, y < -8 ? 8 : y);
-      }
-      p.needsUpdate = true;
-
-      camera.position.x += (mx*1.4 - camera.position.x)*0.04;
-      camera.position.y += (-my*1.0 - camera.position.y)*0.04;
-      camera.position.z = 7 - scrollP*2.2;
-      camera.lookAt(0,0,0);
-    }
-
-    renderer.render(scene, camera);
-    requestAnimationFrame(tick);
-  })();
-
-  /* ---- Loader ---- */
-  let pct = 0;
-  const iv = setInterval(()=>{
-    pct = Math.min(100, pct + Math.ceil(Math.random()*14));
-    document.getElementById('pctval').textContent = pct;
-    document.getElementById('barfill').style.transform = 'scaleX('+(pct/100)+')';
-    if(pct >= 100){
-      clearInterval(iv);
-      setTimeout(()=>document.getElementById('loader').classList.add('done'), 350);
-    }
-  }, 110);
-
-  /* ---- Reveals au scroll ---- */
-  const io = new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting && e.target.classList.add('in')), {threshold:0.15});
-  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-})();
-</script>
+  <!-- Three.js + GSAP + ScrollTrigger + scène -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+  <script src="/assets/js/scene.js" defer></script>
+  <script src="/assets/js/animations.js" defer></script>
 </body>
 </html>
